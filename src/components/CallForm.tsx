@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { useEdgeFunction } from "@/hooks/useEdgeFunction";
 import { 
   Card,
   CardContent,
@@ -18,10 +18,10 @@ const CallForm = () => {
   const [script, setScript] = useState(
     "Hello, this is AppDice. We're a cutting-edge software development company specializing in mobile and web applications. We'd love to discuss how we can help your business grow through innovative technology solutions."
   );
-  const [isLoading, setIsLoading] = useState(false);
+  const { invoke, isLoading } = useEdgeFunction();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!numbers.trim()) {
@@ -33,8 +33,6 @@ const CallForm = () => {
       return;
     }
 
-    setIsLoading(true);
-    
     // Parse phone numbers and remove any non-digit characters
     const parsedNumbers = numbers
       .split("\n")
@@ -44,14 +42,27 @@ const CallForm = () => {
     console.log("Initiating calls to:", parsedNumbers);
     console.log("Using script:", script);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    const { data, error } = await invoke({
+      functionName: 'make-calls',
+      payload: {
+        numbers: parsedNumbers,
+        script
+      }
+    });
+
+    if (error) {
       toast({
-        title: "Calls Initiated",
-        description: `Started calling ${parsedNumbers.length} number(s)`,
+        title: "Error",
+        description: error,
+        variant: "destructive",
       });
-    }, 1500);
+      return;
+    }
+
+    toast({
+      title: "Calls Initiated",
+      description: `Started calling ${parsedNumbers.length} number(s)`,
+    });
   };
 
   return (
