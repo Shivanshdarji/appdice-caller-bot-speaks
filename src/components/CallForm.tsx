@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,20 +11,24 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { Phone, PhoneCall } from "lucide-react";
+import { Phone, PhoneCall, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const CallForm = () => {
   const [numbers, setNumbers] = useState("");
   const [script, setScript] = useState(
     "Hello, this is AppDice. We're a cutting-edge software development company specializing in mobile and web applications. We'd love to discuss how we can help your business grow through innovative technology solutions."
   );
-  const { invoke, isLoading } = useEdgeFunction();
+  const { invoke, isLoading, error: functionError } = useEdgeFunction();
   const { toast } = useToast();
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     
     if (!numbers.trim()) {
+      setFormError("Please enter at least one phone number");
       toast({
         title: "Error",
         description: "Please enter at least one phone number",
@@ -48,9 +53,10 @@ const CallForm = () => {
     });
 
     if (error) {
+      setFormError(`Failed to initiate calls: ${error}`);
       toast({
         title: "Error",
-        description: error,
+        description: `Failed to initiate calls: ${error}`,
         variant: "destructive",
       });
       return;
@@ -71,6 +77,16 @@ const CallForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {(formError || functionError) && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {formError || functionError}
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="numbers" className="text-sm font-medium">

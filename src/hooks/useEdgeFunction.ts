@@ -15,22 +15,30 @@ export const useEdgeFunction = () => {
     setError(null);
 
     try {
+      console.log(`Attempting to call edge function at: ${EDGE_FUNCTION_URL}`);
+      
       const response = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        mode: 'cors',  // Explicitly set CORS mode
       });
 
+      console.log(`Edge function response status: ${response.status}`);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text().catch(() => 'No error details available');
+        throw new Error(`HTTP error! Status: ${response.status}, Details: ${errorText}`);
       }
 
       const data = await response.json();
       return { data, error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred calling the edge function';
+      console.error('Edge function error:', errorMessage);
       setError(errorMessage);
       return { data: null, error: errorMessage };
     } finally {
