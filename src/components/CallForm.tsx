@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,7 +32,6 @@ const CallForm = () => {
       return;
     }
 
-    // Parse phone numbers and remove any non-digit characters
     const parsedNumbers = numbers
       .split("\n")
       .map(num => num.replace(/\D/g, ""))
@@ -43,7 +41,6 @@ const CallForm = () => {
     console.log("Using script:", script);
     
     const { data, error } = await invoke({
-      functionName: 'make-calls',
       payload: {
         numbers: parsedNumbers,
         script
